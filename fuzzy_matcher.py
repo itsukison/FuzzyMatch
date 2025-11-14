@@ -152,14 +152,16 @@ if uploaded_file is not None:
         
         # Display full results with color coding
         if len(display_df) > 0:
-            st.dataframe(
-                display_df.style.map(
-                    lambda x: 'background-color: #90EE90' if x == 'Match' else ('background-color: #FFB6C6' if x == 'No Match' else ''),
+            # Apply styling with error handling
+            try:
+                styled_df = display_df.style.apply(
+                    lambda x: ['background-color: #90EE90' if v == 'Match' else 'background-color: #FFB6C6' if v == 'No Match' else '' for v in x],
                     subset=['Match Status']
-                ).background_gradient(subset=['Confidence (%)'], cmap='RdYlGn', vmin=0, vmax=100),
-                use_container_width=True,
-                height=400
-            )
+                ).background_gradient(subset=['Confidence (%)'], cmap='RdYlGn', vmin=0, vmax=100)
+                st.dataframe(styled_df, use_container_width=True, height=400)
+            except Exception:
+                # Fallback to simple dataframe if styling fails
+                st.dataframe(display_df, use_container_width=True, height=400)
         else:
             st.warning("No results match the selected filter.")
         
